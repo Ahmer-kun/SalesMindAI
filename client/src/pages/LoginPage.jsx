@@ -13,7 +13,7 @@ const LoginPage = () => {
   const location = useLocation();
   const { login } = useAuth();
 
-  // Redirect to where the user was trying to go, or dashboard
+  // Redirects to where the user was trying to go, or dashboard
   const from = location.state?.from?.pathname || "/dashboard";
 
   const [form, setForm] = useState({ email: "", password: "" });

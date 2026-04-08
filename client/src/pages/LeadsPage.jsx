@@ -1,12 +1,11 @@
 /**
  * LeadsPage.jsx
- * Path: client/src/pages/LeadsPage.jsx
- *
- * Full lead management page:
- * - Summary stats at top
- * - Search + status filter bar
- * - Responsive grid of lead cards
- * - Create / Edit modals
+ 
+ * full lead management page
+ * - summary stats at top
+ * - search + status filter bar
+ * - ReSponsive grid of lead cards
+ * - create/ Edit modals
  */
 
 import React, { useState, useCallback } from "react";
@@ -28,7 +27,7 @@ const StatCard = ({ label, value, color }) => (
   </div>
 );
 
-// ─── LeadsPage ────────────────────────────────────────────────────────────────
+// LeadsPage 
 const LeadsPage = () => {
   const [filters, setFilters] = useState({ status: "", search: "", sort: "newest" });
   const [createOpen, setCreateOpen] = useState(false);
@@ -37,7 +36,7 @@ const LeadsPage = () => {
   const { leads, summary, loading, error, createLead, updateLead, deleteLead, updateStatus } =
     useLeads(filters);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // Handlers 
   const handleCreate = async (data) => {
     await createLead(data);
     setCreateOpen(false);
@@ -59,7 +58,7 @@ const LeadsPage = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto page-enter">
-      {/* ── Page header ── */}
+      {/* page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Leads</h1>
@@ -75,7 +74,7 @@ const LeadsPage = () => {
         </Button>
       </div>
 
-      {/* ── Stats row ── */}
+      {/* stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <StatCard label="Total leads" value={summary.total} color="bg-gray-400" />
         <StatCard label="Hot" value={summary.hot} color="bg-red-500" />

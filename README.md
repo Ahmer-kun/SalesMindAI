@@ -4,7 +4,7 @@
 
 ---
 
-## Phase 1: Authentication & Setup ✅
+## Phase 1: Authentication & Setup 
 
 This phase includes:
 - Full Express backend with JWT authentication (access + refresh tokens)
@@ -113,9 +113,9 @@ Backend runs on: http://localhost:5000
 
 ## Coming Next
 
-- **Phase 2**: Lead Management — Add/Edit/Delete leads with status tags
-- **Phase 3**: AI Outreach & Follow-up Generator
-- **Phase 4**: Lead Scoring (0–100)
+- **Phase 2**: Lead Management — Add/Edit/Delete leads with status tags (Completed)
+- **Phase 3**: AI Outreach & Follow-up Generator (under review)
+- **Phase 4**: Lead Scoring (0–100) 
 - **Phase 5**: Full Dashboard & Analytics
 - **Phase 6**: Security hardening pass
 - **Phase 7**: UI polish & responsive design
