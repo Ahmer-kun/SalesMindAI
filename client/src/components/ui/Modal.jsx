@@ -1,14 +1,11 @@
 /**
- * Modal.jsx
- * Path: client/src/components/ui/Modal.jsx
- *
  * Accessible modal dialog — used for lead create/edit forms.
  */
 
 import React, { useEffect } from "react";
 
 const Modal = ({ open, onClose, title, children, maxWidth = "max-w-lg" }) => {
-  // Close on Escape key
+  // close on Escape key
   useEffect(() => {
     if (!open) return;
     const handler = (e) => { if (e.key === "Escape") onClose(); };
@@ -16,7 +13,7 @@ const Modal = ({ open, onClose, title, children, maxWidth = "max-w-lg" }) => {
     return () => document.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  // Lock body scroll when open
+  // loock body scroll when open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };

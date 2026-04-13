@@ -1,7 +1,4 @@
 /**
- * LeadSelector.jsx
- * Path: client/src/components/LeadSelector.jsx
- *
  * Dropdown that fetches user's leads and lets them pick one.
  * Used inside AI Tools forms.
  */

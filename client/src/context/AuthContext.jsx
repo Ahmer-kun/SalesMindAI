@@ -1,5 +1,4 @@
 /**
- * AuthContext.jsx
  * Provides global authentication state to the entire app.
  * Handles: login, logout, signup, and auto-restore session on page reload.
  */
@@ -14,14 +13,14 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken") || null);
   const [loading, setLoading] = useState(true); // true while restoring session
 
-  // ─── Save token to both state and localStorage ─────────────────────────────
+  // save token to both state and localStorage
   const saveToken = (token) => {
     setAccessToken(token);
     if (token) localStorage.setItem("accessToken", token);
     else localStorage.removeItem("accessToken");
   };
 
-  // ─── Restore session on page load ──────────────────────────────────────────
+  // restore session on page load
   useEffect(() => {
     const restoreSession = async () => {
       if (!accessToken) {
@@ -52,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     restoreSession();
   }, []); // Run only on mount
 
-  // ─── Login ─────────────────────────────────────────────────────────────────
+  // login 
   const login = useCallback(async (credentials) => {
     const data = await authService.login(credentials);
     saveToken(data.accessToken);
@@ -60,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     return data;
   }, []);
 
-  // ─── Signup ────────────────────────────────────────────────────────────────
+  // signup
   const signup = useCallback(async (userData) => {
     const data = await authService.signup(userData);
     saveToken(data.accessToken);
@@ -68,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     return data;
   }, []);
 
-  // ─── Logout ────────────────────────────────────────────────────────────────
+  // logout
   const logout = useCallback(async () => {
     try {
       await authService.logout();

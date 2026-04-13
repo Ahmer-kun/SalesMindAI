@@ -1,7 +1,4 @@
 /**
- * GeneratedMessage.jsx
- * Path: client/src/components/GeneratedMessage.jsx
- *
  * Displays the AI-generated message with copy-to-clipboard and
  * a subtle typewriter reveal animation.
  */

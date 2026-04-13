@@ -1,7 +1,4 @@
 /**
- * ScoreDisplay.jsx
- * Path: client/src/components/ScoreDisplay.jsx
- *
  * Renders the AI lead score result with a score bar,
  * label, reasoning, strengths and concerns.
  */
@@ -18,14 +15,14 @@ const ScoreDisplay = ({ score, label, reasoning, strengths = [], concerns = [] }
 
   return (
     <div className="mt-4 card overflow-hidden">
-      {/* Score header */}
+      {/* score header */}
       <div className="px-5 py-4 border-b border-surface-100">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium text-gray-700">AI Lead Score</span>
           <StatusBadge status={label} />
         </div>
 
-        {/* Score bar */}
+        {/* score bar */}
         <div className="space-y-1.5">
           <div className="flex justify-between items-end">
             <span className="text-3xl font-semibold text-gray-900">{score}</span>
@@ -40,7 +37,7 @@ const ScoreDisplay = ({ score, label, reasoning, strengths = [], concerns = [] }
         </div>
       </div>
 
-      {/* Reasoning */}
+      {/* reasoning */}
       {reasoning && (
         <div className="px-5 py-3 border-b border-surface-100">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
@@ -50,7 +47,7 @@ const ScoreDisplay = ({ score, label, reasoning, strengths = [], concerns = [] }
         </div>
       )}
 
-      {/* Strengths & Concerns */}
+      {/* strengths & concerns */}
       {(strengths.length > 0 || concerns.length > 0) && (
         <div className="px-5 py-3 grid grid-cols-2 gap-4">
           {strengths.length > 0 && (

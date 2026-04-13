@@ -49,6 +49,25 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    // Email verification
+    isEmailVerified:   { type: Boolean, default: false },
+    emailVerifyToken:  { type: String, select: false },
+    emailVerifyExpires:{ type: Date,   select: false },
+ 
+    // Password reset
+    passwordResetToken:  { type: String, select: false },
+    passwordResetExpires:{ type: Date,   select: false },
+ 
+    // MFA
+    mfaEnabled:   { type: Boolean, default: false },
+    mfaOtp:       { type: String,  select: false },
+    mfaOtpExpires:{ type: Date,    select: false },
+ 
+    // Google OAuth
+    googleId: { type: String, sparse: true },
+    avatar:   { type: String, default: "" },
+
   },
   {
     timestamps: true, // Adds createdAt and updatedAt automatically
@@ -82,6 +101,9 @@ userSchema.methods.toSafeObject = function () {
     name: this.name,
     email: this.email,
     role: this.role,
+    isEmailVerified: this.isEmailVerified,
+    mfaEnabled: this.mfaEnabled,
+    avatar: this.avatar,
     createdAt: this.createdAt,
   };
 };

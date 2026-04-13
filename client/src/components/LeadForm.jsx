@@ -1,7 +1,4 @@
 /**
- * LeadForm.jsx
- * Path: client/src/components/LeadForm.jsx
- *
  * Reusable form for creating or editing a lead.
  * Pass initialData to pre-fill for editing.
  */

@@ -1,14 +1,11 @@
 /**
- * MiniChart.jsx
- * Path: client/src/components/MiniChart.jsx
- *
  * Pure SVG chart components — no external chart library needed.
  * Includes: BarChart, LineChart, DonutChart
  */
 
 import React from "react";
 
-// ─── Bar Chart ────────────────────────────────────────────────────────────────
+// Bar Chart
 export const BarChart = ({ data = [], height = 120, color = "#6366f1" }) => {
   if (!data.length) return null;
 
@@ -18,7 +15,7 @@ export const BarChart = ({ data = [], height = 120, color = "#6366f1" }) => {
   const barW   = Math.max(2, (w - pad * 2) / data.length - 2);
   const gap    = (w - pad * 2 - barW * data.length) / Math.max(data.length - 1, 1);
 
-  // Only show ~6 labels evenly spaced so they don't crowd
+  // only show ~6 labels evenly spaced so they don't crowd
   const labelStep = Math.ceil(data.length / 6);
 
   return (
@@ -55,7 +52,7 @@ export const BarChart = ({ data = [], height = 120, color = "#6366f1" }) => {
   );
 };
 
-// ─── Line Chart ───────────────────────────────────────────────────────────────
+// line Chart
 export const LineChart = ({ data = [], height = 120, color = "#6366f1" }) => {
   if (!data.length) return null;
 
@@ -128,7 +125,7 @@ export const LineChart = ({ data = [], height = 120, color = "#6366f1" }) => {
   );
 };
 
-// ─── Donut Chart ──────────────────────────────────────────────────────────────
+// donut chart
 export const DonutChart = ({ segments = [], size = 120 }) => {
   const total  = segments.reduce((s, seg) => s + seg.value, 0);
   const r      = 42;

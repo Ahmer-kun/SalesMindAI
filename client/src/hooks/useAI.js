@@ -1,7 +1,4 @@
 /**
- * useAI.js
- * Path: client/src/hooks/useAI.js
- *
  * Custom hook for AI generation — handles loading, error, and result state.
  */
 

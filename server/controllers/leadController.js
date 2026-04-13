@@ -12,40 +12,60 @@ const Lead = require("../models/Lead");
 // Supports: ?status=Hot|Warm|Cold  ?search=name/email/company  ?sort=newest|oldest
 const getLeads = async (req, res) => {
   try {
-    const { status, search, sort = "newest" } = req.query;
-
-    // Base filter — always scope to current user
+    const {
+      status,
+      search,
+      sort  = "newest",
+      page  = 1,
+      limit = 12,
+    } = req.query;
+ 
+    const pageNum  = Math.max(1, parseInt(page)  || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 12));
+    const skip     = (pageNum - 1) * limitNum;
+ 
     const filter = { user: req.user._id };
-
-    // Optional status filter
+ 
     if (status && ["Hot", "Warm", "Cold"].includes(status)) {
       filter.status = status;
     }
-
-    // Optional search across name, email, company
+ 
     if (search && search.trim()) {
-      const regex = new RegExp(search.trim(), "i"); // case-insensitive
-      filter.$or = [
-        { name: regex },
-        { email: regex },
-        { company: regex },
-      ];
+      const regex = new RegExp(search.trim(), "i");
+      filter.$or = [{ name: regex }, { email: regex }, { company: regex }];
     }
-
-    // Sort order
+ 
     const sortOrder = sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 };
-
-    const leads = await Lead.find(filter).sort(sortOrder).lean();
-
-    // Summary counts for analytics
+ 
+    // Parallel: paginated leads + total count + all leads for summary
+    const [totalCount, leads, allLeads] = await Promise.all([
+      Lead.countDocuments(filter),
+      Lead.find(filter).sort(sortOrder).skip(skip).limit(limitNum).lean(),
+      Lead.find({ user: req.user._id }).select("status").lean(),
+    ]);
+ 
+    const totalPages = Math.ceil(totalCount / limitNum);
+ 
     const summary = {
-      total: leads.length,
-      hot: leads.filter((l) => l.status === "Hot").length,
-      warm: leads.filter((l) => l.status === "Warm").length,
-      cold: leads.filter((l) => l.status === "Cold").length,
+      total: allLeads.length,
+      hot:   allLeads.filter((l) => l.status === "Hot").length,
+      warm:  allLeads.filter((l) => l.status === "Warm").length,
+      cold:  allLeads.filter((l) => l.status === "Cold").length,
     };
-
-    return res.status(200).json({ success: true, summary, leads });
+ 
+    return res.status(200).json({
+      success: true,
+      summary,
+      leads,
+      pagination: {
+        total:       totalCount,
+        page:        pageNum,
+        limit:       limitNum,
+        totalPages,
+        hasNextPage: pageNum < totalPages,
+        hasPrevPage: pageNum > 1,
+      },
+    });
   } catch (error) {
     console.error("[getLeads]", error.message);
     return res.status(500).json({ success: false, message: "Failed to fetch leads." });

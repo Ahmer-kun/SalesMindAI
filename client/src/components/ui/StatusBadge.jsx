@@ -1,7 +1,4 @@
 /**
- * StatusBadge.jsx
- * Path: client/src/components/ui/StatusBadge.jsx
- *
  * Displays Hot / Warm / Cold with color coding.
  */
 

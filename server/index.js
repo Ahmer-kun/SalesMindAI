@@ -1,8 +1,3 @@
-/**
- * mongoSanitize, preventHPP, detectSuspiciousPayload,
- * guardRequestSize, additionalSecurityHeaders, logAuthAttempt
- */
-
 require("dotenv").config();
 const express      = require("express");
 const helmet       = require("helmet");
@@ -13,25 +8,21 @@ const xssClean     = require("xss-clean");
 const connectDB    = require("./utils/connectDB");
 
 const {
-  mongoSanitize,
-  preventHPP,
-  detectSuspiciousPayload,
-  guardRequestSize,
-  additionalSecurityHeaders,
-  logAuthAttempt,
+  mongoSanitize, preventHPP, detectSuspiciousPayload,
+  guardRequestSize, additionalSecurityHeaders, logAuthAttempt,
 } = require("./middleware/securityMiddleware");
 
-const authRoutes      = require("./routes/authRoutes");
-const leadRoutes      = require("./routes/leadRoutes");
-const aiRoutes        = require("./routes/aiRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
+const authRoutes          = require("./routes/authRoutes");
+const leadRoutes          = require("./routes/leadRoutes");
+const aiRoutes            = require("./routes/aiRoutes");
+const analyticsRoutes     = require("./routes/analyticsRoutes");
+const userRoutes          = require("./routes/userRoutes");
+const passwordResetRoutes = require("./routes/passwordResetRoutes");
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
 
 connectDB();
-
-// Security middleware (order matters)
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -39,7 +30,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc:  ["'self'"],
       styleSrc:   ["'self'", "'unsafe-inline'"],
-      imgSrc:     ["'self'", "data:"],
+      imgSrc:     ["'self'", "data:", "https://lh3.googleusercontent.com"],
       connectSrc: ["'self'"],
       fontSrc:    ["'self'"],
       objectSrc:  ["'none'"],
@@ -50,17 +41,16 @@ app.use(helmet({
 }));
 
 app.use(additionalSecurityHeaders);
-
 app.use(cors({
   origin: (origin, cb) => {
     const allowed = [process.env.CLIENT_URL || "http://localhost:5173"];
     if (!origin || allowed.includes(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
-  credentials:    true,
-  methods:        ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge:         600,
+  maxAge: 600,
 }));
 
 app.use(express.json({ limit: "10kb" }));
@@ -72,40 +62,32 @@ app.use(xssClean());
 app.use(mongoSanitize);
 app.use(detectSuspiciousPayload);
 
-// Rate limiters
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, max: 100,
   message: { success: false, message: "Too many requests. Please try again later." },
-  standardHeaders: true,
-  legacyHeaders:   false,
+  standardHeaders: true, legacyHeaders: false,
 });
-
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
+  windowMs: 15 * 60 * 1000, max: 10,
   message: { success: false, message: "Too many login attempts. Please wait 15 minutes." },
   skipSuccessfulRequests: true,
 });
 
 app.use(globalLimiter);
 
-// Routes
-app.use("/api/auth",      authLimiter, logAuthAttempt, authRoutes);
-app.use("/api/leads",     leadRoutes);
-app.use("/api/ai",        aiRoutes);
-app.use("/api/analytics", analyticsRoutes);
+app.use("/api/auth",     authLimiter, logAuthAttempt, authRoutes);
+app.use("/api/leads",    leadRoutes);
+app.use("/api/ai",       aiRoutes);
+app.use("/api/analytics",analyticsRoutes);
+app.use("/api/user",     userRoutes);
+app.use("/api/password", passwordResetRoutes);
 
 app.get("/api/health", (req, res) =>
   res.json({ success: true, message: "SalesMind AI server is running 🚀", timestamp: new Date() })
 );
 
-// 404
-app.use((req, res) =>
-  res.status(404).json({ success: false, message: "Route not found." })
-);
+app.use((req, res) => res.status(404).json({ success: false, message: "Route not found." }));
 
-// Global error handlers
 app.use((err, req, res, next) => {
   const isDev = process.env.NODE_ENV === "development";
   console.error(`[ERROR] ${err.message}`);
@@ -118,7 +100,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// start
 app.listen(PORT, () => {
   console.log(`\n🚀 SalesMind AI — port ${PORT} [${process.env.NODE_ENV || "development"}]`);
   console.log(`   Security: Helmet ✓  CORS ✓  Rate limiting ✓  XSS ✓  NoSQL sanitize ✓\n`);

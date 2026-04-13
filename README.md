@@ -1,22 +1,30 @@
 # SalesMind AI
 
-> AI-powered Sales Assistant for SMEs — MERN Stack + OpenAI
+> AI-powered Sales Assistant for SMEs — MERN Stack + OpenAI/HuggingFace
 
 ---
 
-## Phase 1: Authentication & Setup 
+## What it does
 
-This phase includes:
-- Full Express backend with JWT authentication (access + refresh tokens)
-- HTTP-only cookie-based refresh tokens
-- bcrypt password hashing (12 salt rounds)
-- Helmet, CORS, rate limiting, XSS sanitization
-- Joi input validation
-- React frontend with Vite + Tailwind CSS
-- Login / Signup pages with password strength meter
-- Auth context with auto session restore
-- Protected routes
-- Token refresh interceptor in Axios
+- **Lead Management** — Add, edit, delete and filter leads with Hot/Warm/Cold status
+- **AI Outreach Generator** — Personalized first-touch sales emails written by AI
+- **AI Follow-up Generator** — Smart follow-up messages based on conversation history
+- **Lead Scoring** — AI scores every lead 0–100 with reasoning, strengths and concerns
+- **Dashboard & Analytics** — Pipeline charts, lead trends, AI usage stats
+- **Secure Auth** — JWT access tokens + HTTP-only refresh token cookies
+
+---
+
+## Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | React 18 + Vite + Tailwind CSS |
+| Backend | Node.js + Express.js |
+| Database | MongoDB Atlas |
+| Auth | JWT + bcrypt |
+| AI | OpenAI API (HuggingFace fallback) |
+| Security | Helmet, CORS, rate limiting, XSS clean, NoSQL sanitize |
 
 ---
 
@@ -25,33 +33,34 @@ This phase includes:
 ```
 salesmind-ai/
 ├── server/
-│   ├── controllers/    authController.js
-│   ├── middleware/     authMiddleware.js
-│   ├── models/         User.js
-│   ├── routes/         authRoutes.js
-│   ├── utils/          connectDB.js, tokenUtils.js, validators.js
+│   ├── controllers/     authController, leadController, aiController, analyticsController
+│   ├── middleware/      authMiddleware, securityMiddleware
+│   ├── models/          User, Lead
+│   ├── routes/          authRoutes, leadRoutes, aiRoutes, analyticsRoutes
+│   ├── services/        aiService (OpenAI + HuggingFace)
+│   ├── utils/           connectDB, tokenUtils, validators, leadValidators
 │   ├── index.js
-│   ├── package.json
 │   └── .env.example
 │
-└── client/
-    ├── src/
-    │   ├── components/   ProtectedRoute.jsx, ui/index.jsx
-    │   ├── context/      AuthContext.jsx
-    │   ├── pages/        LoginPage.jsx, SignupPage.jsx, DashboardPage.jsx
-    │   ├── services/     api.js, authService.js
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── index.css
-    ├── index.html
-    ├── vite.config.js
-    ├── tailwind.config.js
-    └── package.json
+├── client/
+│   ├── public/          favicon.svg
+│   └── src/
+│       ├── components/  LeadCard, LeadForm, LeadSelector, GeneratedMessage,
+│       │                ScoreDisplay, MiniChart, layout/AppLayout,
+│       │                ui/ (Input, Button, Alert, Logo, StatusBadge, Modal)
+│       ├── context/     AuthContext, ToastContext
+│       ├── hooks/       useLeads, useAI, useAnalytics
+│       ├── pages/       Login, Signup, Dashboard, Leads, AITools, Analytics
+│       └── services/    api, authService, leadService, aiService, analyticsService
+│
+├── SECURITY.md
+├── DEPLOYMENT.md
+└── README.md
 ```
 
 ---
 
-## Setup Instructions
+## Local Setup
 
 ### 1. Backend
 
@@ -59,7 +68,7 @@ salesmind-ai/
 cd server
 npm install
 cp .env.example .env
-# Fill in your MongoDB URI and JWT secrets in .env
+# Fill in MONGODB_URI, JWT secrets, and AI API key
 npm run dev
 ```
 
@@ -76,46 +85,82 @@ npm install
 npm run dev
 ```
 
-Frontend runs on: http://localhost:5173  
-Backend runs on: http://localhost:5000
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
 
 ---
 
-## API Endpoints (Phase 1)
+## API Endpoints
 
-| Method | Endpoint           | Description                  | Auth |
-|--------|--------------------|------------------------------|------|
-| POST   | /api/auth/signup   | Register new user            | No   |
-| POST   | /api/auth/login    | Login, get tokens            | No   |
-| POST   | /api/auth/logout   | Clear session                | No   |
-| POST   | /api/auth/refresh  | Refresh access token         | Cookie |
-| GET    | /api/auth/me       | Get current user             | Yes  |
-| GET    | /api/health        | Server health check          | No   |
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | /api/auth/signup | Register |
+| POST | /api/auth/login | Login |
+| POST | /api/auth/logout | Logout |
+| POST | /api/auth/refresh | Refresh access token |
+| GET  | /api/auth/me | Get current user |
+
+### Leads
+| Method | Endpoint | Description |
+|---|---|---|
+| GET    | /api/leads | List leads (filter/search/sort) |
+| POST   | /api/leads | Create lead |
+| GET    | /api/leads/:id | Get single lead |
+| PUT    | /api/leads/:id | Update lead |
+| DELETE | /api/leads/:id | Delete lead |
+| PATCH  | /api/leads/:id/status | Quick status update |
+
+### AI
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | /api/ai/outreach | Generate outreach email |
+| POST | /api/ai/followup | Generate follow-up |
+| POST | /api/ai/score | Score a lead (0–100) |
+| GET  | /api/ai/history/:leadId | AI message history |
+
+### Analytics
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/analytics | Full dashboard data |
 
 ---
 
-## Security Checklist (Phase 1)
+## Deployment
 
-- [x] Helmet.js for HTTP security headers
-- [x] CORS with strict origin whitelist
-- [x] Rate limiting (100 req/15min global, 10 req/15min for auth)
-- [x] XSS sanitization via xss-clean
-- [x] Joi input validation on all auth endpoints
-- [x] bcrypt with 12 salt rounds
-- [x] JWT stored in HTTP-only cookies (refresh) + memory/Authorization header (access)
-- [x] Refresh token rotation on every use
-- [x] Refresh token invalidated on logout
-- [x] Password never returned in API responses (select: false)
-- [x] Secrets stored in .env (never hardcoded)
-- [x] Request body size limited to 10kb
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions:
+- **Frontend** → Vercel (free)
+- **Backend** → Render (free)
+- **Database** → MongoDB Atlas (free)
 
 ---
 
-## Coming Next
+## Security
 
-- **Phase 2**: Lead Management — Add/Edit/Delete leads with status tags (Completed)
-- **Phase 3**: AI Outreach & Follow-up Generator (under review)
-- **Phase 4**: Lead Scoring (0–100) 
-- **Phase 5**: Full Dashboard & Analytics
-- **Phase 6**: Security hardening pass
-- **Phase 7**: UI polish & responsive design
+See [SECURITY.md](./SECURITY.md) for the full security audit checklist.
+
+Highlights:
+- bcrypt (12 salt rounds)
+- JWT in HTTP-only cookies
+- Helmet + HSTS + CSP
+- NoSQL injection sanitization
+- XSS clean
+- Rate limiting (global + auth + AI)
+- Input validation via Joi on all endpoints
+
+---
+
+## Environment Variables
+
+```env
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb+srv://...
+JWT_ACCESS_SECRET=...
+JWT_REFRESH_SECRET=...
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+CLIENT_URL=http://localhost:5173
+OPENAI_API_KEY=sk-...
+HUGGINGFACE_API_KEY=hf_...
+```

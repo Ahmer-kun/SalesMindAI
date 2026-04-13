@@ -1,5 +1,4 @@
 /**
- * ProtectedRoute.jsx
  * Wraps routes that require authentication.
  * Redirects unauthenticated users to /login.
  * Shows a loading state while session is being restored.
