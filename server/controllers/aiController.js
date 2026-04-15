@@ -1,7 +1,4 @@
 /**
- * aiController.js
- * Path: server/controllers/aiController.js
- *
  * Handles AI generation requests.
  * All routes are protected — user must be authenticated.
  * Leads are always verified to belong to the requesting user.

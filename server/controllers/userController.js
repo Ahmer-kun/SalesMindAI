@@ -1,7 +1,4 @@
 /**
- * userController.js
- * Path: server/controllers/userController.js
- *
  * Handles user account management:
  *  - updateProfile: change name and/or email
  *  - changePassword: verify old password, set new one

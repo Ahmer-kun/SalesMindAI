@@ -1,28 +1,46 @@
 /**
- * authRoutes.js
- * Defines all /api/auth endpoints.
- * Validation middleware runs before controller logic.
+ * Auth routes only. Forgot/reset password is in passwordResetRoutes.js
+ * Frontend uses /api/password/* for forgot/reset — do NOT duplicate here.
  */
 
 const express = require("express");
-const router = express.Router();
-const { signup, login, refresh, logout, getMe } = require("../controllers/authController");
+const router  = express.Router();
+const {
+  signup, login, verifyMFA,
+  refresh, logout, getMe,
+  verifyEmail, resendVerification,
+  toggleMFA,
+} = require("../controllers/authController");
+
 const { protect } = require("../middleware/authMiddleware");
 const { signupSchema, loginSchema, validate } = require("../utils/validators");
+const Joi = require("joi");
 
-// POST /api/auth/signup  → Register a new user
-router.post("/signup", validate(signupSchema), signup);
+const validateBody = (schema) => (req, res, next) => {
+  const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
+  if (error) {
+    return res.status(400).json({ success: false, message: error.details.map((d) => d.message).join(", ") });
+  }
+  req.body = value;
+  next();
+};
 
-// POST /api/auth/login   → Authenticate user, return tokens
-router.post("/login", validate(loginSchema), login);
+const mfaVerifySchema = Joi.object({
+  userId: Joi.string().required(),
+  otp:    Joi.string().length(6).required().messages({ "string.length": "OTP must be 6 digits" }),
+});
 
-// POST /api/auth/refresh → Exchange refresh cookie for new access token
-router.post("/refresh", refresh);
+// ─── Public ───────────────────────────────────────────────────────────────────
+router.post("/signup",     validate(signupSchema), signup);
+router.post("/login",      validate(loginSchema),  login);
+router.post("/refresh",    refresh);
+router.post("/logout",     logout);
+router.get("/verify-email", verifyEmail);                             // ?token=xxx
+router.post("/verify-mfa", validateBody(mfaVerifySchema), verifyMFA);
 
-// POST /api/auth/logout  → Clear tokens and end session
-router.post("/logout", logout);
-
-// GET  /api/auth/me      → Get current user info (protected)
-router.get("/me", protect, getMe);
+// ─── Protected ────────────────────────────────────────────────────────────────
+router.get("/me",                   protect, getMe);
+router.post("/resend-verification", protect, resendVerification);
+router.post("/toggle-mfa",          protect, toggleMFA);
 
 module.exports = router;

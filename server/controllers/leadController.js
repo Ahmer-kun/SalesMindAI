@@ -1,7 +1,4 @@
 /**
- * leadController.js
- * Path: server/controllers/leadController.js
- *
  * Handles all lead CRUD operations.
  * Every query is scoped to req.user._id — users can only see their own leads.
  */

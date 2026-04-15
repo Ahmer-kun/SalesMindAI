@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { userService } from "../services/userService";
 import { Input, Button } from "../components/ui";
+import api from "../services/api";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 const Section = ({ title, description, children }) => (
@@ -230,6 +231,131 @@ const PasswordSection = () => {
   );
 };
 
+// ─── Email Verification Section ───────────────────────────────────────────────
+const EmailVerificationSection = ({ user }) => {
+  const { toast }       = useToast();
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent]       = useState(false);
+
+  if (user?.isEmailVerified) {
+    return (
+      <Section title="Email verification" description="Your identity has been confirmed.">
+        <div className="flex items-center gap-2.5">
+          <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-600">
+            <span className="font-medium text-gray-900">{user.email}</span> is verified.
+          </p>
+        </div>
+      </Section>
+    );
+  }
+
+  const handleResend = async () => {
+    setLoading(true);
+    try {
+      await api.post("/auth/resend-verification");
+      setSent(true);
+      toast.success("Verification email sent! Check your inbox.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send email.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Section title="Email verification" description="Verify your email to secure your account.">
+      <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 mb-4">
+        <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+        <div>
+          <p className="text-sm font-medium text-amber-800">Email not verified</p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            {user?.email} — check your inbox for the verification link.
+          </p>
+        </div>
+      </div>
+      {sent ? (
+        <p className="text-sm text-green-600 font-medium">✓ Verification email sent — check your inbox.</p>
+      ) : (
+        <Button onClick={handleResend} loading={loading} variant="ghost">
+          Resend verification email
+        </Button>
+      )}
+    </Section>
+  );
+};
+
+// ─── MFA Section ──────────────────────────────────────────────────────────────
+const MFASection = ({ user, onUpdate }) => {
+  const { toast }             = useToast();
+  const [loading, setLoading] = useState(false);
+  const [enabled, setEnabled] = useState(user?.mfaEnabled || false);
+
+  const handleToggle = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.post("/auth/toggle-mfa");
+      setEnabled(data.mfaEnabled);
+      onUpdate({ ...user, mfaEnabled: data.mfaEnabled });
+      toast.success(`MFA ${data.mfaEnabled ? "enabled" : "disabled"} successfully.`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to toggle MFA.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Section
+      title="Two-factor authentication"
+      description="Add an extra layer of security to your account."
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex-1 pr-6">
+          <p className="text-sm text-gray-700 font-medium">
+            {enabled ? "MFA is enabled" : "MFA is disabled"}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {enabled
+              ? "A 6-digit code will be sent to your email each time you log in."
+              : "Enable to require a 6-digit email code on every login."}
+          </p>
+        </div>
+
+        {/* Toggle switch */}
+        <button
+          onClick={handleToggle}
+          disabled={loading}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-60 ${
+            enabled ? "bg-brand-600" : "bg-surface-300"
+          }`}
+          role="switch"
+          aria-checked={enabled}
+        >
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+            enabled ? "translate-x-6" : "translate-x-1"
+          }`} />
+        </button>
+      </div>
+
+      {enabled && (
+        <p className="text-xs text-brand-600 mt-3 flex items-center gap-1.5">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Active — you'll be prompted for a code on your next login.
+        </p>
+      )}
+    </Section>
+  );
+};
+
 // ─── Danger Zone Section ──────────────────────────────────────────────────────
 const DangerZoneSection = () => {
   const { logout } = useAuth();
@@ -316,25 +442,16 @@ const DangerZoneSection = () => {
 
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 const SettingsPage = () => {
-  const { user, login } = useAuth();
+  const { user }    = useAuth();
   const [currentUser, setCurrentUser] = useState(user);
 
-  // When profile updates, sync to local state
-  const handleProfileUpdate = (updatedUser) => {
-    setCurrentUser(updatedUser);
-    // Also update AuthContext so topbar/sidebar reflects new name
-    // We do this by re-fetching via /api/auth/me on next load
-    // For instant update we patch localStorage indirectly via the context
-  };
+  const handleUpdate = (updatedUser) => setCurrentUser(updatedUser);
 
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto page-enter">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Settings</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Manage your account preferences and security.
-        </p>
+        <p className="text-sm text-gray-500 mt-0.5">Manage your account preferences and security.</p>
       </div>
 
       {/* Account info card */}
@@ -343,19 +460,25 @@ const SettingsPage = () => {
           {currentUser?.name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900">{currentUser?.name}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-gray-900">{currentUser?.name}</p>
+            {currentUser?.isEmailVerified
+              ? <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium">Verified</span>
+              : <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Unverified</span>
+            }
+          </div>
           <p className="text-xs text-gray-500">{currentUser?.email}</p>
           <p className="text-xs text-gray-400 mt-0.5">
-            Member since {new Date(currentUser?.createdAt).toLocaleDateString("en-US", {
-              month: "long", year: "numeric"
-            })}
+            Member since {new Date(currentUser?.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
           </p>
         </div>
       </div>
 
       {/* Sections */}
       <div className="space-y-5">
-        <ProfileSection user={currentUser} onUpdate={handleProfileUpdate} />
+        <ProfileSection user={currentUser} onUpdate={handleUpdate} />
+        <EmailVerificationSection user={currentUser} />
+        <MFASection user={currentUser} onUpdate={handleUpdate} />
         <PasswordSection />
         <DangerZoneSection />
       </div>

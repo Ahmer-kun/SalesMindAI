@@ -1,7 +1,6 @@
 /**
  * leadRoutes.js
  * Path: server/routes/leadRoutes.js
- *
  * All /api/leads endpoints — all are protected.
  */
 

@@ -1,7 +1,4 @@
 /**
- * analyticsController.js
- * Path: server/controllers/analyticsController.js
- *
  * Computes all dashboard analytics from the user's lead data.
  * All queries are scoped to req.user._id — strict data isolation.
  */

@@ -1,9 +1,3 @@
-/**
- * App.jsx
- * Path: client/src/App.jsx
- * UPDATED IN PART 2 PHASES 3+4: Added /forgot-password and /reset-password routes
- */
-
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider }    from "./context/AuthContext";
@@ -15,6 +9,8 @@ import LoginPage           from "./pages/LoginPage";
 import SignupPage          from "./pages/SignupPage";
 import ForgotPasswordPage  from "./pages/ForgotPasswordPage";
 import ResetPasswordPage   from "./pages/ResetPasswordPage";
+import MFAPage             from "./pages/MFAPage";
+import VerifyEmailPage     from "./pages/VerifyEmailPage";
 import DashboardPage       from "./pages/DashboardPage";
 import LeadsPage           from "./pages/LeadsPage";
 import AIToolsPage         from "./pages/AIToolsPage";
@@ -31,6 +27,8 @@ const App = () => (
           <Route path="/signup"          element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password"  element={<ResetPasswordPage />} />
+          <Route path="/mfa"             element={<MFAPage />} />
+          <Route path="/verify-email"    element={<VerifyEmailPage />} />
 
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
