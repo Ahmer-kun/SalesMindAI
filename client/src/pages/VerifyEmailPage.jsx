@@ -1,10 +1,3 @@
-/**
- * VerifyEmailPage.jsx
- * Path: client/src/pages/VerifyEmailPage.jsx
- *
- * UPDATED: Better handling for already-verified tokens and expired links.
- */
-
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../services/api";

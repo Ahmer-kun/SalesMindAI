@@ -1,7 +1,4 @@
 /**
- * SettingsPage.jsx
- * Path: client/src/pages/SettingsPage.jsx
- *
  * Account settings page with three sections:
  *  1. Profile — update name and email
  *  2. Password — change password
@@ -16,7 +13,7 @@ import { userService } from "../services/userService";
 import { Input, Button } from "../components/ui";
 import api from "../services/api";
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
+//section wrapper
 const Section = ({ title, description, children }) => (
   <div className="card overflow-hidden">
     <div className="px-6 py-4 border-b border-surface-100">
@@ -29,7 +26,7 @@ const Section = ({ title, description, children }) => (
   </div>
 );
 
-// ─── Profile Section ──────────────────────────────────────────────────────────
+// profile section 
 const ProfileSection = ({ user, onUpdate }) => {
   const { toast } = useToast();
   const [form, setForm]     = useState({ name: user?.name || "", email: user?.email || "" });
@@ -106,7 +103,7 @@ const ProfileSection = ({ user, onUpdate }) => {
   );
 };
 
-// ─── Password Section ─────────────────────────────────────────────────────────
+// password section
 const PasswordSection = () => {
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -231,7 +228,7 @@ const PasswordSection = () => {
   );
 };
 
-// ─── Email Verification Section ───────────────────────────────────────────────
+// email verification section
 const EmailVerificationSection = ({ user }) => {
   const { toast }       = useToast();
   const [loading, setLoading] = useState(false);
@@ -291,7 +288,7 @@ const EmailVerificationSection = ({ user }) => {
   );
 };
 
-// ─── MFA Section ──────────────────────────────────────────────────────────────
+// MFA section
 const MFASection = ({ user, onUpdate }) => {
   const { toast }             = useToast();
   const [loading, setLoading] = useState(false);
@@ -356,7 +353,7 @@ const MFASection = ({ user, onUpdate }) => {
   );
 };
 
-// ─── Danger Zone Section ──────────────────────────────────────────────────────
+// danger zone section 
 const DangerZoneSection = () => {
   const { logout } = useAuth();
   const { toast }  = useToast();
@@ -440,7 +437,7 @@ const DangerZoneSection = () => {
   );
 };
 
-// ─── Main Settings Page ───────────────────────────────────────────────────────
+// main settings page 
 const SettingsPage = () => {
   const { user }    = useAuth();
   const [currentUser, setCurrentUser] = useState(user);

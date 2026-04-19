@@ -1,9 +1,3 @@
-/**
- * SignupPage.jsx
- * Path: client/src/pages/SignupPage.jsx
- * UPDATED IN PART 2 PHASE 7: Added Google sign-up button
- */
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
