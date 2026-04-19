@@ -1,10 +1,3 @@
-/**
- * userRoutes.js
- * Path: server/routes/userRoutes.js
- *
- * All /api/user endpoints — all protected.
- */
-
 const express = require("express");
 const router  = express.Router();
 const { protect } = require("../middleware/authMiddleware");
@@ -12,16 +5,15 @@ const {
   updateProfile,
   changePassword,
   deleteAccount,
+  completeProfile,
 } = require("../controllers/userController");
 
 const Joi = require("joi");
 
-// ─── Validation schemas ───────────────────────────────────────────────────────
 const validate = (schema) => (req, res, next) => {
   const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
   if (error) {
-    const messages = error.details.map((d) => d.message).join(", ");
-    return res.status(400).json({ success: false, message: messages });
+    return res.status(400).json({ success: false, message: error.details.map((d) => d.message).join(", ") });
   }
   req.body = value;
   next();
@@ -30,15 +22,11 @@ const validate = (schema) => (req, res, next) => {
 const profileSchema = Joi.object({
   name:  Joi.string().trim().min(2).max(100),
   email: Joi.string().email({ tlds: { allow: false } }).lowercase().max(254),
-}).or("name", "email"); // at least one required
+}).or("name", "email");
 
 const passwordSchema = Joi.object({
-  currentPassword: Joi.string().required().messages({
-    "any.required": "Current password is required",
-  }),
-  newPassword: Joi.string()
-    .min(8)
-    .max(128)
+  currentPassword: Joi.string().required().messages({ "any.required": "Current password is required" }),
+  newPassword: Joi.string().min(8).max(128)
     .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .required()
     .messages({
@@ -49,21 +37,26 @@ const passwordSchema = Joi.object({
 });
 
 const deleteSchema = Joi.object({
-  password: Joi.string().required().messages({
-    "any.required": "Password is required to delete account",
-  }),
+  password: Joi.string().required().messages({ "any.required": "Password is required to delete account" }),
 });
 
-// All routes protected
+const completeProfileSchema = Joi.object({
+  username: Joi.string().trim().min(2).max(30)
+    .pattern(/^[a-zA-Z0-9_]+$/)
+    .required()
+    .messages({
+      "string.min":          "Username must be at least 2 characters",
+      "string.max":          "Username cannot exceed 30 characters",
+      "string.pattern.base": "Username can only contain letters, numbers and underscores",
+      "any.required":        "Username is required",
+    }),
+});
+
 router.use(protect);
 
-// PUT  /api/user/profile  → update name and/or email
-router.put("/profile", validate(profileSchema), updateProfile);
-
-// PUT  /api/user/password → change password
-router.put("/password", validate(passwordSchema), changePassword);
-
-// DELETE /api/user        → permanently delete account + all data
-router.delete("/", validate(deleteSchema), deleteAccount);
+router.put("/profile",          validate(profileSchema),         updateProfile);
+router.put("/password",          validate(passwordSchema),         changePassword);
+router.delete("/",               validate(deleteSchema),           deleteAccount);
+router.post("/complete-profile", validate(completeProfileSchema),  completeProfile); // ← new
 
 module.exports = router;

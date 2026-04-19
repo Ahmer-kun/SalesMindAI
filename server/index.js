@@ -1,3 +1,9 @@
+/**
+ * index.js
+ * Path: server/index.js
+ * UPDATED IN PART 2 PHASE 7: Added passport + Google OAuth routes
+ */
+
 require("dotenv").config();
 const express      = require("express");
 const helmet       = require("helmet");
@@ -5,6 +11,7 @@ const cors         = require("cors");
 const cookieParser = require("cookie-parser");
 const rateLimit    = require("express-rate-limit");
 const xssClean     = require("xss-clean");
+const passport     = require("./middleware/passportConfig");
 const connectDB    = require("./utils/connectDB");
 
 const {
@@ -13,6 +20,7 @@ const {
 } = require("./middleware/securityMiddleware");
 
 const authRoutes          = require("./routes/authRoutes");
+const googleAuthRoutes    = require("./routes/googleAuthRoutes");
 const leadRoutes          = require("./routes/leadRoutes");
 const aiRoutes            = require("./routes/aiRoutes");
 const analyticsRoutes     = require("./routes/analyticsRoutes");
@@ -62,6 +70,9 @@ app.use(xssClean());
 app.use(mongoSanitize);
 app.use(detectSuspiciousPayload);
 
+// Initialize passport (no session — we use JWT)
+app.use(passport.initialize());
+
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, max: 100,
   message: { success: false, message: "Too many requests. Please try again later." },
@@ -75,7 +86,9 @@ const authLimiter = rateLimit({
 
 app.use(globalLimiter);
 
+// Routes
 app.use("/api/auth",     authLimiter, logAuthAttempt, authRoutes);
+app.use("/api/auth",     googleAuthRoutes); // Google OAuth — same /api/auth prefix
 app.use("/api/leads",    leadRoutes);
 app.use("/api/ai",       aiRoutes);
 app.use("/api/analytics",analyticsRoutes);
@@ -101,6 +114,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 SalesMind AI — port ${PORT} [${process.env.NODE_ENV || "development"}]`);
-  console.log(`   Security: Helmet ✓  CORS ✓  Rate limiting ✓  XSS ✓  NoSQL sanitize ✓\n`);
+  console.log(`\n SalesMind AI — port ${PORT} [${process.env.NODE_ENV || "development"}]`);
+  console.log(`   Security: Helmet ✓  CORS ✓  Rate limiting ✓  XSS ✓  NoSQL sanitize ✓`);
+  console.log(`   Google OAuth: ${process.env.GOOGLE_CLIENT_ID ? "✓ Configured" : "✗ Not configured"}\n`);
 });

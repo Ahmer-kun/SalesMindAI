@@ -6,12 +6,14 @@
 
 ## What it does
 
-- **Lead Management** — Add, edit, delete and filter leads with Hot/Warm/Cold status
+- **Lead Management** — Add, edit, delete and filter leads with Hot/Warm/Cold status + pagination
 - **AI Outreach Generator** — Personalized first-touch sales emails written by AI
-- **AI Follow-up Generator** — Smart follow-up messages based on conversation history
+- **AI Follow-up Generator** — Smart follow-ups based on conversation history
 - **Lead Scoring** — AI scores every lead 0–100 with reasoning, strengths and concerns
+- **AI Message History** — View all AI-generated messages per lead
 - **Dashboard & Analytics** — Pipeline charts, lead trends, AI usage stats
-- **Secure Auth** — JWT access tokens + HTTP-only refresh token cookies
+- **Authentication** — JWT + HTTP-only cookies, Google OAuth, MFA via email, email verification
+- **Account Settings** — Update profile, username, change password, toggle MFA, delete account
 
 ---
 
@@ -22,8 +24,9 @@
 | Frontend | React 18 + Vite + Tailwind CSS |
 | Backend | Node.js + Express.js |
 | Database | MongoDB Atlas |
-| Auth | JWT + bcrypt |
-| AI | OpenAI API (HuggingFace fallback) |
+| Auth | JWT + bcrypt + Passport.js (Google OAuth) |
+| AI | OpenAI API / HuggingFace (Groq provider) |
+| Email | Nodemailer (Gmail SMTP) |
 | Security | Helmet, CORS, rate limiting, XSS clean, NoSQL sanitize |
 
 ---
@@ -33,25 +36,28 @@
 ```
 salesmind-ai/
 ├── server/
-│   ├── controllers/     authController, leadController, aiController, analyticsController
-│   ├── middleware/      authMiddleware, securityMiddleware
+│   ├── controllers/     authController, leadController, aiController,
+│   │                    analyticsController, userController, passwordResetController
+│   ├── middleware/      authMiddleware, securityMiddleware, passportConfig
 │   ├── models/          User, Lead
-│   ├── routes/          authRoutes, leadRoutes, aiRoutes, analyticsRoutes
-│   ├── services/        aiService (OpenAI + HuggingFace)
-│   ├── utils/           connectDB, tokenUtils, validators, leadValidators
-│   ├── index.js
-│   └── .env.example
+│   ├── routes/          authRoutes, leadRoutes, aiRoutes, analyticsRoutes,
+│   │                    userRoutes, passwordResetRoutes, googleAuthRoutes
+│   ├── services/        aiService
+│   ├── utils/           connectDB, tokenUtils, validators, leadValidators, emailService
+│   └── index.js
 │
-├── client/
-│   ├── public/          favicon.svg
-│   └── src/
-│       ├── components/  LeadCard, LeadForm, LeadSelector, GeneratedMessage,
-│       │                ScoreDisplay, MiniChart, layout/AppLayout,
-│       │                ui/ (Input, Button, Alert, Logo, StatusBadge, Modal)
-│       ├── context/     AuthContext, ToastContext
-│       ├── hooks/       useLeads, useAI, useAnalytics
-│       ├── pages/       Login, Signup, Dashboard, Leads, AITools, Analytics
-│       └── services/    api, authService, leadService, aiService, analyticsService
+├── client/src/
+│   ├── components/      LeadCard, LeadForm, LeadSelector, GeneratedMessage,
+│   │                    ScoreDisplay, MiniChart, AIHistoryModal,
+│   │                    layout/AppLayout, ui/ (Input, Button, Alert, Logo,
+│   │                    StatusBadge, Modal)
+│   ├── context/         AuthContext, ToastContext
+│   ├── hooks/           useLeads, useAI, useAnalytics
+│   ├── pages/           Login, Signup, Dashboard, Leads, AITools, Analytics,
+│   │                    Settings, ForgotPassword, ResetPassword, MFA,
+│   │                    VerifyEmail, GoogleAuthSuccess, CompleteProfile
+│   └── services/        api, authService, leadService, aiService,
+│                        analyticsService, userService
 │
 ├── SECURITY.md
 ├── DEPLOYMENT.md
@@ -63,22 +69,14 @@ salesmind-ai/
 ## Local Setup
 
 ### 1. Backend
-
 ```bash
 cd server
 npm install
-cp .env.example .env
-# Fill in MONGODB_URI, JWT secrets, and AI API key
+cp .env.example .env   # fill in all values
 npm run dev
 ```
 
-Generate JWT secrets:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-
 ### 2. Frontend
-
 ```bash
 cd client
 npm install
@@ -86,67 +84,7 @@ npm run dev
 ```
 
 - Frontend: http://localhost:5173
-- Backend: http://localhost:5000
-
----
-
-## API Endpoints
-
-### Auth
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | /api/auth/signup | Register |
-| POST | /api/auth/login | Login |
-| POST | /api/auth/logout | Logout |
-| POST | /api/auth/refresh | Refresh access token |
-| GET  | /api/auth/me | Get current user |
-
-### Leads
-| Method | Endpoint | Description |
-|---|---|---|
-| GET    | /api/leads | List leads (filter/search/sort) |
-| POST   | /api/leads | Create lead |
-| GET    | /api/leads/:id | Get single lead |
-| PUT    | /api/leads/:id | Update lead |
-| DELETE | /api/leads/:id | Delete lead |
-| PATCH  | /api/leads/:id/status | Quick status update |
-
-### AI
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | /api/ai/outreach | Generate outreach email |
-| POST | /api/ai/followup | Generate follow-up |
-| POST | /api/ai/score | Score a lead (0–100) |
-| GET  | /api/ai/history/:leadId | AI message history |
-
-### Analytics
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | /api/analytics | Full dashboard data |
-
----
-
-## Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions:
-- **Frontend** → Vercel (free)
-- **Backend** → Render (free)
-- **Database** → MongoDB Atlas (free)
-
----
-
-## Security
-
-See [SECURITY.md](./SECURITY.md) for the full security audit checklist.
-
-Highlights:
-- bcrypt (12 salt rounds)
-- JWT in HTTP-only cookies
-- Helmet + HSTS + CSP
-- NoSQL injection sanitization
-- XSS clean
-- Rate limiting (global + auth + AI)
-- Input validation via Joi on all endpoints
+- Backend:  http://localhost:5000
 
 ---
 
@@ -155,12 +93,54 @@ Highlights:
 ```env
 PORT=5000
 NODE_ENV=development
-MONGODB_URI=mongodb+srv://...
-JWT_ACCESS_SECRET=...
-JWT_REFRESH_SECRET=...
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/salesmind
+JWT_ACCESS_SECRET=64_char_random_hex
+JWT_REFRESH_SECRET=different_64_char_random_hex
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
 OPENAI_API_KEY=sk-...
 HUGGINGFACE_API_KEY=hf_...
+EMAIL_USER=your@gmail.com
+EMAIL_PASS=your_16_char_app_password
+GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxx
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 ```
+
+---
+
+## Authentication Flows
+
+**Email + Password:** Signup → verify email → login → (MFA if enabled) → dashboard
+
+**Google OAuth (new user):** Click Google → consent → complete profile (set username) → dashboard
+
+**Google OAuth (existing user):** Click Google → consent → dashboard
+
+**MFA:** Login → OTP sent to email → enter 6-digit code → dashboard
+
+**Forgot Password:** Login → "Forgot password?" → email → reset link → new password → login
+
+---
+
+## API Summary
+
+| Prefix | Description |
+|---|---|
+| `/api/auth` | Signup, login, logout, refresh, verify email, MFA, Google OAuth |
+| `/api/password` | Forgot password, validate token, reset password |
+| `/api/leads` | CRUD + pagination + status + search/filter |
+| `/api/ai` | Outreach, follow-up, scoring, message history |
+| `/api/analytics` | Dashboard stats, pipeline, trends |
+| `/api/user` | Profile, password, delete account, complete profile |
+
+---
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) — Vercel + Render + MongoDB Atlas (all free tiers).
+
+## Security
+
+See [SECURITY.md](./SECURITY.md) — full audit checklist.

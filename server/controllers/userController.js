@@ -1,15 +1,8 @@
-/**
- * Handles user account management:
- *  - updateProfile: change name and/or email
- *  - changePassword: verify old password, set new one
- *  - deleteAccount: permanently remove account and all data
- */
-
 const User = require("../models/User");
 const Lead = require("../models/Lead");
 const bcrypt = require("bcryptjs");
 
-// ─── UPDATE PROFILE (name + email) ───────────────────────────────────────────
+// UPDATE PROFILE (name + email)
 const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
@@ -60,7 +53,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
+// CHANGE PASSWORD
 const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -104,7 +97,7 @@ const changePassword = async (req, res) => {
   }
 };
 
-// ─── DELETE ACCOUNT ───────────────────────────────────────────────────────────
+// DELETE ACCOUNT
 const deleteAccount = async (req, res) => {
   try {
     const { password } = req.body;
@@ -148,4 +141,54 @@ const deleteAccount = async (req, res) => {
   }
 };
 
-module.exports = { updateProfile, changePassword, deleteAccount };
+
+
+// ─── COMPLETE PROFILE (Google OAuth new users) ────────────────────────────────
+const completeProfile = async (req, res) => {
+  try {
+    const { username } = req.body;
+    const userId = req.user._id;
+
+    if (!username || !username.trim()) {
+      return res.status(400).json({ success: false, message: "Username is required." });
+    }
+
+    // Validate username format
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return res.status(400).json({
+        success: false,
+        message: "Username can only contain letters, numbers and underscores.",
+      });
+    }
+
+    if (username.length > 30) {
+      return res.status(400).json({ success: false, message: "Username cannot exceed 30 characters." });
+    }
+
+    // Check uniqueness (skip empty usernames)
+    const existing = await require("../models/User").findOne({
+      username: username.trim(),
+      _id: { $ne: userId },
+    });
+    if (existing) {
+      return res.status(409).json({ success: false, message: "That username is already taken." });
+    }
+
+    const user = await require("../models/User").findByIdAndUpdate(
+      userId,
+      { $set: { username: username.trim(), profileComplete: true } },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile completed!",
+      user: user.toSafeObject(),
+    });
+  } catch (error) {
+    console.error("[completeProfile]", error.message);
+    return res.status(500).json({ success: false, message: "Failed to complete profile." });
+  }
+};
+
+module.exports = { updateProfile, changePassword, deleteAccount, completeProfile };
