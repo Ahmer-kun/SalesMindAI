@@ -1,5 +1,4 @@
 /**
- * AnalyticsPage.jsx
  *  - summary stat cards
  *  - Leads over time (bar chart)
  *  - Pipeline donut chart
@@ -12,7 +11,8 @@ import { useAnalytics } from "../hooks/useAnalytics";
 import { BarChart, LineChart, DonutChart } from "../components/MiniChart";
 import StatusBadge from "../components/ui/StatusBadge";
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
+
+// stat card 
 const StatCard = ({ label, value, sub, icon }) => (
   <div className="card px-5 py-4">
     <div className="flex items-start justify-between">
@@ -26,7 +26,8 @@ const StatCard = ({ label, value, sub, icon }) => (
   </div>
 );
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
+
+// section wrapper with title
 const Section = ({ title, children }) => (
   <div>
     <h2 className="text-sm font-semibold text-gray-900 mb-3">{title}</h2>
@@ -34,12 +35,14 @@ const Section = ({ title, children }) => (
   </div>
 );
 
-// ─── Skeleton loader ──────────────────────────────────────────────────────────
+
+// skeleton loader
 const Skeleton = ({ className = "" }) => (
   <div className={`bg-surface-200 animate-pulse rounded-xl ${className}`} />
 );
 
-// ─── Score bar ────────────────────────────────────────────────────────────────
+
+// score bar 
 const ScoreBar = ({ score }) => {
   const color =
     score >= 70 ? "bg-red-500" : score >= 40 ? "bg-amber-500" : "bg-blue-400";
@@ -53,7 +56,8 @@ const ScoreBar = ({ score }) => {
   );
 };
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+
+// main Page
 const AnalyticsPage = () => {
   const { data, loading, error } = useAnalytics();
   const [chartType, setChartType] = useState("bar"); // "bar" | "line"
@@ -80,7 +84,7 @@ const AnalyticsPage = () => {
         </p>
       </div>
 
-      {/* ── Summary stats ── */}
+      {/* summary stats */}
       <Section title="Overview">
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -115,7 +119,7 @@ const AnalyticsPage = () => {
         )}
       </Section>
 
-      {/* ── Leads over time ── */}
+      {/* leads over time */}
       <Section title="Leads added — last 30 days">
         <div className="card p-5">
           {/* Chart type toggle */}
@@ -156,7 +160,7 @@ const AnalyticsPage = () => {
         </div>
       </Section>
 
-      {/* ── Pipeline + scored leads ── */}
+      {/* pipeline + scored leads */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Donut + breakdown */}
@@ -197,7 +201,7 @@ const AnalyticsPage = () => {
           </div>
         </Section>
 
-        {/* Top scored leads */}
+        {/* top scored leads */}
         <Section title="Top scored leads">
           <div className="card divide-y divide-surface-100">
             {loading ? (
@@ -228,7 +232,7 @@ const AnalyticsPage = () => {
         </Section>
       </div>
 
-      {/* ── Recent activity ── */}
+      {/* recent activity */}
       <Section title="Recent activity">
         <div className="card divide-y divide-surface-100">
           {loading ? (
@@ -282,25 +286,3 @@ const AnalyticsPage = () => {
 };
 
 export default AnalyticsPage;
-
-// /**
-//  * AnalyticsPage.jsx
-//  * Path: client/src/pages/AnalyticsPage.jsx
-//  * Placeholder — will be built in Phase 5.
-//  */
-
-// import React from "react";
-
-// const AnalyticsPage = () => (
-//   <div className="p-6 max-w-4xl mx-auto page-enter">
-//     <h1 className="text-xl font-semibold text-gray-900 tracking-tight mb-1">Analytics</h1>
-//     <p className="text-sm text-gray-500">Pipeline analytics and activity tracking — coming in Phase 5.</p>
-//     <div className="card mt-6 p-10 flex flex-col items-center text-center gap-3">
-//       <div className="w-12 h-12 rounded-2xl bg-surface-100 flex items-center justify-center text-2xl">📊</div>
-//       <p className="text-sm font-medium text-gray-900">Analytics unlock in Phase 5</p>
-//       <p className="text-xs text-gray-400 max-w-xs">Track conversion rates, lead activity, and pipeline health over time.</p>
-//     </div>
-//   </div>
-// );
-
-// export default AnalyticsPage;

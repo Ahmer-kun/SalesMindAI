@@ -1,9 +1,3 @@
-/**
- * AIToolsPage.jsx
- * Path: client/src/pages/AIToolsPage.jsx
- * REPLACED IN PHASE 3
- */
-
 import React, { useState } from "react";
 import { useAI } from "../hooks/useAI";
 import LeadSelector from "../components/LeadSelector";

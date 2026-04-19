@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { Input, Button, Alert, Logo } from "../components/ui";
 
-// ─── Google button ─────────────────────────────────────────────────────────
+// google button 
 const GoogleButton = () => {
   const handleGoogleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/google`;
@@ -28,7 +28,7 @@ const GoogleButton = () => {
   );
 };
 
-// ─── Divider ───────────────────────────────────────────────────────────────
+// divider 
 const Divider = () => (
   <div className="flex items-center gap-3 my-1">
     <div className="flex-1 h-px bg-surface-200" />

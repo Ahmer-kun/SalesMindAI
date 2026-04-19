@@ -1,9 +1,4 @@
 /**
- * LeadsPage.jsx
- * Path: client/src/pages/LeadsPage.jsx
- *
- * UPDATED IN PART 2 PHASE 3: Added pagination controls at bottom.
- * All original functionality preserved — optimistic updates, toasts,
  * full filter/search/sort, create/edit modals, empty states, error state.
  */
 
@@ -16,7 +11,7 @@ import Modal from "../components/ui/Modal";
 import { Button } from "../components/ui";
 import StatusBadge from "../components/ui/StatusBadge";
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
+// stat card component for summary row at top of leads page
 const StatCard = ({ label, value, color }) => (
   <div className="card px-4 py-3 flex items-center gap-3">
     <div className={`w-2 h-8 rounded-full flex-shrink-0 ${color}`} />
@@ -27,7 +22,8 @@ const StatCard = ({ label, value, color }) => (
   </div>
 );
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
+// pagination component with prev/next buttons, page numbers, and total count
+
 const Pagination = ({ pagination, page, onPrev, onNext, onGoTo }) => {
   if (!pagination || pagination.totalPages <= 1) return null;
 
@@ -110,7 +106,7 @@ const Pagination = ({ pagination, page, onPrev, onNext, onGoTo }) => {
   );
 };
 
-// ─── LeadsPage ────────────────────────────────────────────────────────────────
+// leadspage
 const LeadsPage = () => {
   const [filters, setFilters]       = useState({ status: "", search: "", sort: "newest" });
   const [createOpen, setCreateOpen] = useState(false);
@@ -134,7 +130,7 @@ const LeadsPage = () => {
     updateStatus,
   } = useLeads(filters);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // handlers
 
   const handleCreate = async (data) => {
     try {
@@ -196,7 +192,7 @@ const LeadsPage = () => {
   const clearStatusFilter = () =>
     setFilters((prev) => ({ ...prev, status: "" }));
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // render 
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto page-enter">
 

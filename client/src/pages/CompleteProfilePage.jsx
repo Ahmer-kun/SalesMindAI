@@ -1,10 +1,7 @@
 /**
- * CompleteProfilePage.jsx
- * Path: client/src/pages/CompleteProfilePage.jsx
- *
- * Shown to new Google OAuth users after sign-up.
- * Lets them set a username before accessing the app.
- * Uses the user's Google avatar and name from AuthContext.
+ * shown to new Google OAuth users after sign-up.
+ * lets them set a username before accessing the app.
+ * uses the user's Google avatar and name from AuthContext.
  */
 
 import React, { useState } from "react";
